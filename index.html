@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Evde Şifa Rehberi</title>
+<style>
+:root{--bg:#f6f8f5;--fg:#1d2b22;--card:#fff;--mut:#5d6b62;--acc:#2e7d4f;--line:#dde5dd;--wbg:#fff4e0;--wfg:#7a4a00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141b17;--fg:#e6efe8;--card:#1d2722;--mut:#9fb0a5;--acc:#5fc388;--line:#2d3b33;--wbg:#3a2c12;--wfg:#ffd89a}}
+:root[data-theme="dark"]{--bg:#141b17;--fg:#e6efe8;--card:#1d2722;--mut:#9fb0a5;--acc:#5fc388;--line:#2d3b33;--wbg:#3a2c12;--wfg:#ffd89a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0 auto;max-width:760px;padding:16px;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--fg)}
+h1{margin:8px 0 4px;font-size:1.6rem}
+.sub{margin:0 0 14px;color:var(--mut);font-size:.92rem}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:8px 0;z-index:2}
+input{width:100%;box-sizing:border-box;padding:12px 14px;font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:12px}
+input:focus{outline:2px solid var(--acc)}
+.cnt{margin:6px 2px 0;color:var(--mut);font-size:.85rem}
+.L{margin:22px 0 6px;font-weight:700;color:var(--acc);font-size:1.1rem;border-bottom:2px solid var(--line)}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:8px 0}
+summary{cursor:pointer;padding:13px 14px;font-weight:600;list-style:none}
+summary::after{content:"+";float:right;color:var(--acc)}
+details[open] summary::after{content:"–"}
+.b{padding:0 14px 12px}
+.b h3{margin:10px 0 4px;font-size:.95rem;color:var(--acc)}
+.b ul{margin:0;padding-left:20px}
+.w{margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--wbg);color:var(--wfg);font-size:.92rem}
+.no{text-align:center;color:var(--mut);padding:30px 0}
+footer{margin:28px 0 8px;color:var(--mut);font-size:.82rem}
+</style>
+</head>
+<body>
+<h1>🌿 Evde Şifa Rehberi</h1>
+<p class="sub">Sık görülen rahatsızlıklar için iyi gelen yiyecek-içecekler ve evde uygulanabilecekler.</p>
+<div class="bar">
+<input id="q" type="search" placeholder="Ara: mide bulantısı, zencefil, öksürük…" autocomplete="off" aria-label="Ara">
+<div class="cnt" id="c"></div>
+</div>
+<div id="list"></div>
+<footer>⚠️ Bu sayfa bilgilendirme amaçlıdır; doktor muayenesinin yerini tutmaz. Belirtiler sürer veya ağırlaşırsa doktora başvurun, acil durumda 112'yi arayın. Bal 1 yaş altına verilmez. Kaynaklar ağırlıklı olarak NHS (nhs.uk) sayfalarıdır; ıhlamur, kayısı gibi geleneksel öneriler için bilimsel kanıt sınırlıdır.</footer>
+<script>
+const D=[
+["Baş Ağrısı","Bol su|Düzenli öğünler (öğün atlamayın)|Zencefilli veya nane çayı","Sessiz, loş bir yerde dinlenin|Alın veya ense için soğuk/ılık kompres|Ekrandan mola verin, gevşeyin|Kaçının: alkol, aşırı uyku","Ani ve çok şiddetli başlarsa, kafa travması sonrası, kol/bacakta uyuşma-güçsüzlük, çift görme olursa veya sık tekrarlıyorsa"],
+["Baş Dönmesi","Bol su|Düzenli, hafif öğünler","Yatıp geçmesini bekleyin, sonra yavaş kalkın|Ani hareketlerden kaçının, dinlenin|Geçene kadar araç, merdiven, makine kullanmayın|Kaçının: kahve, sigara, alkol","Geçmiyor veya tekrarlıyorsa; işitme-konuşma bozukluğu, kulak çınlaması, görme değişikliği, uyuşma, bayılma ya da çarpıntı eşlik ediyorsa"],
+["Boğaz Ağrısı","Sıcak limonlu bal (1-2 çay kaşığı bal, ılık içilir)|Ilık çorba|Ihlamur, adaçayı","Ilık tuzlu suyla gargara (çocuklara uygun değil)|Bol sıvı alın, sesinizi dinlendirin","Nefes alma/yutma çok zorlaşırsa, birkaç günde geçmezse, yüksek ateş veya sık tekrar varsa. Küçük çocuğa sıcak içecek vermeyin"],
+["Gaz ve Şişkinlik","Yulaf (örn. lapa)|Günde en fazla 1 yemek kaşığı keten tohumu|Nane, rezene veya papatya çayı","Yavaş yiyin, öğün atlamayın|Hafif yürüyüş yapın, gevşeyin|Kaçının: lahana, brokoli, karnabahar, kuru baklagil, soğan, kuru meyve","Kilo kaybı, kanlı dışkı, şiddetli ağrı veya sürekli şişkinlik varsa"],
+["Hazımsızlık","Küçük porsiyonlu, hafif yemekler|Papatya veya nane çayı","Yavaş yiyin, çiğneyin|Yemekten sonra hemen yatmayın|Kaçının: yağlı, baharatlı, işlenmiş yiyecekler; kahve ve alkol","Sık tekrarlıyorsa, kilo kaybı, yutma güçlüğü veya kusma eşlik ediyorsa"],
+["İshal","Beyaz ekmek, makarna, haşlanmış pirinç ve patates|Muz|Çorba, seyreltilmiş meyve suyu|Küçük ve sık yudumlarla su","Günde 8-10 bardak sıvı alın (ishalde kaybedilen sıvıyı yerine koyun)|Dinlenin|Eczaneden oral rehidrasyon tuzu (ORS) sorun|Kaçının: yağlı-baharatlı yiyecekler, kahve, alkol, sorbitollü ürünler","7 günden uzun sürerse, kanlı ishal, 2 günden uzun süren kusma ve sıvı tutamama, susuzluk belirtileri; bebek, çocuk ve yaşlılarda erken başvurun"],
+["Kabızlık","Yulaf, baklagiller, havuç, kabuğu soyulmuş patates|Tam tahıllı ekmek, meyve ve sebze (lifi kademeli artırın)|Keten tohumu|Kuru kayısı veya erik","Günde en az 8 bardak su için|Düzenli hareket edin|Tuvalet ihtiyacını geciktirmeyin|Tuvalette ayaklarınızı alçak bir tabureye koyun","Karında şişlik, kusma, ateş, ağrı varsa; kanlı dışkı, 6 haftadan uzun süren şikayet veya 50 yaş üstünde ilk kez ortaya çıktıysa"],
+["Karın Ağrısı","Papatya veya nane çayı|Haşlanmış pirinç, yulaf, muz gibi hafif yiyecekler|Küçük porsiyonlar","Karna ılık kompres koyun|Dinlenin, küçük yudumlarla su için|Sıkı kıyafetlerden kaçının|Kaçının: yağlı ve baharatlı yiyecekler","Ani ve şiddetli ağrı, sağ alt karında artan ağrı, ateş, tekrarlayan kusma, kanlı dışkı/kusmuk, karında sertlik veya birkaç günden uzun süren ağrıda hemen doktora gidin"],
+["Kusma","Önce mideyi bir süre dinlendirin, sonra küçük yudumlarla su|Sade kraker, pirinç|Zencefil çayı","Küçük ve sık yudumlar alın, dinlenin|Susuzluğa dikkat edin (az idrar, ağız kuruluğu, baş dönmesi)","2 günden uzun sürerse, sıvı tutamıyorsanız, kanlı kusma, şiddetli karın ağrısı veya ateş varsa; bebek ve çocuklarda beklemeyin"],
+["Mide Bulantısı","Zencefilli veya nane çayı, zencefilli bisküvi|Soğuk içeceklerden küçük yudumlar|Küçük ve sık öğünler|Sade kraker, tost","Temiz hava alın|Dikkatinizi dağıtın (müzik, film)|Yemekten sonra hemen uzanmayın|Kaçının: ağır kokulu yemekler, sıcak/kızarmış/yağlı yiyecekler, hızlı yemek, belinizi sıkan giysiler","Birkaç günde geçmezse veya sık tekrarlıyorsa; kanlı kusmuk, şiddetli karın ağrısı, yüksek ateş, ense sertliği varsa. Göğüs ağrısı veya nefes darlığıyla birlikteyse acil (112). Zencefil, kan sulandırıcılarla etkileşebilir"],
+["Mide Yanması (Reflü)","Küçük porsiyonlu, az yağlı yemekler|Yeterli su","Yatmadan 3-4 saat önce yemeyin|Yatakta baş ve omuzları yükseltin (yatağın baş tarafını 10-20 cm kaldırın)|Sigarayı bırakmak, fazla kiloyu vermek ve stresi azaltmak yardımcı olur|Kaçının: kahve, alkol, çikolata, yağlı ve baharatlı yiyecekler; ibuprofen gibi ilaçlar yanmayı artırabilir","Hemen her gün 3 hafta veya daha uzun sürerse, yutma güçlüğü, kilo kaybı veya göğüs ağrısı varsa"],
+["Nezle ve Soğuk Algınlığı","Sıcak limonlu bal|Sıcak çorba, bol sıvı|Ihlamur","Dinlenin, bol sıvı için|Ilık tuzlu gargara (çocuklara uygun değil)|El yıkama ve mendil kullanımıyla bulaştırmayın|Ağrı kesici/soğuk algınlığı ilaçlarını eczacıya danışın (aynı etken maddeyi iki kez almayın)","Belirtiler kötüleşirse, öksürük 3 haftayı geçerse veya çocuğunuz için endişeleniyorsanız"],
+["Öksürük","Sıcak limonlu bal (1 yaş altına bal verilmez)|Bol ılık sıvı|Ihlamur","Dinlenin ve bol sıvı için|Hastaysanız evde kalın|Eczacıdan pastil/şurup sorun (çocuk ve hamilelerde bazı ürünler uygun değil)","3 haftadan uzun sürerse, kanlı balgam, nefes darlığı, göğüs ağrısı olur veya aniden kötüleşirse"],
+["Uykusuzluk","Akşam ılık süt, papatya veya ıhlamur çayı|Akşam hafif yemek","Her gün aynı saatte yatıp kalkın|Yatak odasını karanlık, sessiz ve serin tutun|Yatmadan önce ekran kullanmayın|Gün içinde hareket edin, akşam gevşeme egzersizi yapın|Kaçının: akşam kahve, çay, enerji içeceği ve alkol","Haftalarca sürer veya gündüz işlevlerinizi bozarsa; yüksek sesle horlama ve nefes duraklaması varsa"],
+["Adet Sancısı","Zencefil veya papatya çayı|Ilık içecekler, bol su","Karna sıcak su torbası koyun|Hafif yürüyüş veya esneme yapın|Eczacıya ağrı kesici sorun","Ağrı günlük yaşamı engelliyorsa, giderek şiddetleniyorsa veya düzensiz/aşırı kanama varsa"],
+["Araç Tutması","Zencefilli çay veya bisküvi|Yola çıkmadan hafif yemek","Ön koltukta oturun, ufka bakın|Temiz hava alın, okumayın|Eczacıdan araç tutması ilacı sorabilirsiniz","Şiddetli veya sürekli kusma, geçmeyen baş dönmesi varsa"],
+["Ağız Kokusu","Bol su|Taze sebze ve meyve","Dişleri günde 2 kez fırçalayın, diş ipi kullanın|Dilinizi temizleyin|Sigara, sarımsak ve soğanı azaltın","Düzelmezse diş hekimine; diş eti kanaması veya ağız yarası eşlik ediyorsa"],
+["Ağız Yarası","Soğuk yiyecekler (yoğurt, dondurma)|Yumuşak, ılık yemekler","Ilık tuzlu suyla gargara|Yumuşak diş fırçası kullanın|Kaçının: baharatlı, asitli, sert yiyecekler","3 haftadan uzun sürerse, çok büyükse veya sık tekrarlıyorsa"],
+["Ateş (Hafif)","Bol su, seyreltilmiş meyve suyu, çorba|Hafif yemekler","Dinlenin, hafif giyinin|Oda ısısını serin tutun, ılık sünger yapın|Eczacıdan parasetamol sorun (16 yaş altına aspirin verilmez)","40 °C üstü ateş, ense sertliği, nöbet, tekrarlayan kusma, nefes darlığı; 3 aylıktan küçük bebekte hemen"],
+["Bel Ağrısı","Yeterli sıvı|Dengeli beslenme","Uzun süre yatmayın, hafif yürüyün|Bele sıcak kompres|Ağır kaldırmaktan kaçının, duruşunuza dikkat edin","Bacakta uyuşma-güçsüzlük, ateş, idrar veya dışkıyı tutamama (acil) ya da birkaç haftada geçmeyen ağrı varsa"],
+["Boyun Tutulması","","Sıcak veya soğuk kompres (havluya sarın)|Boynu hafifçe hareket ettirin, hareketsiz kalmayın|Uygun yükseklikte yastık kullanın|Ekran başında sık mola verin","Kolda uyuşma, ateşle birlikte ense sertliği, travma sonrası veya birkaç günde geçmezse"],
+["Burkulma","","Dinlendirin, uzvu yukarıda tutun|Havluya sarılı buzu 15-20 dk uygulayın|Çok sıkmadan elastik bandaj sarın","Basamıyorsanız, şekil bozukluğu veya ciddi şişlik varsa, birkaç günde düzelmezse (kırık olabilir)"],
+["Burun Kanaması","","Oturun, öne eğilin, ağızdan nefes alın|Burnun yumuşak kısmını 10-15 dk kesintisiz sıkın|Başı geriye yatırmayın","30 dakikada durmazsa, baş travmasından sonra veya çok fazla kan kaybı varsa"],
+["Burun Tıkanıklığı","Sıcak çorba, bol sıvı","Tuzlu suyla burun yıkama veya spreyi|Sıcak duş buharı|Başınız yüksekte yatın","3 haftadan uzun sürerse, yüzde ağrı-ateş veya tek taraflı kötü kokulu akıntı varsa"],
+["Böcek Isırığı","","Bölgeyi sabunlu suyla yıkayın|Soğuk kompres uygulayın, kaşımayın|Eczacıdan antihistaminik krem veya tablet sorun","Yüz/dil şişmesi, nefes darlığı (acil, 112); yayılan kızarıklık, irin veya ateş varsa"],
+["Çürük (Morarma)","","İlk 1-2 gün soğuk kompres|Dinlendirin, mümkünse yukarıda tutun","Çok ağrılı veya geniş çürük, sebepsiz sık morarma ya da 2 haftada geçmemesi"],
+["Dudak Çatlaması","Bol su","Dudak balmı sürün|Dudakları yalamayın|Güneşten ve soğuk rüzgârdan koruyun","İyileşmeyen yara veya kanayan çatlaklarda"],
+["Diş Ağrısı","Yumuşak, ılık yiyecekler","Ilık tuzlu suyla gargara|Yanağa soğuk kompres|Kaçının: çok sıcak, soğuk ve şekerli şeyler|Eczacıdan ağrı kesici sorun","Diş hekimine en kısa sürede gidin; yüzde şişlik, ateş veya yutma güçlüğü varsa acil"],
+["Ayak Şişmesi","Tuzu azaltın|Bol su","Ayakları kalp seviyesinin üstüne kaldırın|Hafif yürüyün, uzun süre ayakta/oturmayın|Rahat ayakkabı giyin","Tek bacakta ağrılı şişlik, nefes darlığı, göğüs ağrısı veya hamilelikte ani şişme varsa"],
+["Göz Yorgunluğu","Yeterli su|Sebze ve meyve","Her 20 dk'da bir 20 sn uzağa bakın|Sık göz kırpın, ışığı ayarlayın|Eczacıdan yapay gözyaşı sorun","Görme bulanıklığı, çift görme, göz ağrısı veya kızarıklık sürerse"],
+["Grip","Sıcak çorba, bol sıvı|Limonlu bal (1 yaş altına verilmez)","Dinlenin|Ateş ve ağrı için eczacıya danışın|Hastayken evde kalın, el hijyenine dikkat edin","Nefes darlığı, göğüs ağrısı, 3 günden uzun yüksek ateş; kronik hastalar, gebeler ve yaşlılarda erken başvurun"],
+["Güneş Yanığı","Bol su","Serin duş veya soğuk kompres|Nemlendirici veya aloe vera jeli|Güneşten uzak durun","Kabarcıklar, yüksek ateş, halsizlik veya geniş alan yanığı varsa; bebeklerde hemen"],
+["Halsizlik","Dengeli ve düzenli öğünler|Bol su","Düzenli uyuyun|Hafif egzersiz yapın|Stresi azaltın","Haftalarca sürer, kilo kaybı, ateş veya nefes darlığı eşlik ederse"],
+["Hemoroid (Basur)","Lifli gıdalar (yulaf, sebze, tam tahıl)|Bol su","Ilık suda oturma banyosu|Tuvalette ıkınmayın, uzun oturmayın|Eczacıdan krem sorun","Rektal kanama, şiddetli ağrı veya 1 haftada düzelmezse"],
+["Hıçkırık","Soğuk sudan küçük yudumlar","Nefesi birkaç saniye tutun|Yavaş yemek yiyin","48 saatten uzun sürerse veya yemeyi engelliyorsa"],
+["İştahsızlık","Küçük ve sık öğünler|Sevdiğiniz yiyecekler|Besleyici atıştırmalıklar","Yemek saatlerini sabitleyin|Hafif yürüyüş yapın","2 haftadan uzun sürer veya kilo kaybı varsa"],
+["İdrar Yanması","Bol su","Kafein ve alkolü azaltın|Eczacıya danışın","Mutlaka doktora başvurun; ateş, bel ağrısı, kanlı idrar varsa, hamilelikte ve çocuklarda beklemeyin"],
+["Kas Ağrısı","Yeterli su|Dengeli beslenme","Dinlenin, hafif hareket edin|Ilık duş veya sıcak kompres|Nazikçe esneyin","Güçsüzlük, ateş, koyu idrar varsa veya birkaç günde geçmezse"],
+["Kas Krampı","Bol su","Kası nazikçe esnetin ve masaj yapın|Ilık kompres|Yatmadan önce esneme yapın","Sık tekrarlarsa, şişlik/kızarıklık veya güçsüzlük varsa"],
+["Kepek","","Kepek şampuanı kullanın|Düzenli ve nazikçe yıkayın|Stresi azaltın","Kızarıklık, yoğun kaşıntı veya kabuklanma varsa"],
+["Kesik ve Sıyrık","","Ellerinizi yıkayın, yarayı temiz suyla temizleyin|Kanamayı temiz bezle bastırarak durdurun|Temiz bandajla kapatın","Kanama durmuyorsa, yara derinse, kirliyse veya enfeksiyon belirtisi (kızarıklık, irin) varsa"],
+["Kulak Ağrısı","","Kulağa ılık havlu koyun|Ağrı kesici için eczacıya danışın|Kulağa çubuk veya cisim sokmayın","2-3 günde geçmezse, akıntı, işitme kaybı veya ateş varsa"],
+["Küçük Yanıklar","","10-20 dk serin akan su tutun|Kabarcıkları patlatmayın|Tereyağı, diş macunu gibi şeyler sürmeyin|Temiz örtüyle kapatın","Büyük/derin yanıklar, yüz-el-genital bölge yanıkları ve çocuklarda hemen doktora gidin"],
+["Kuru Cilt","Bol su","Nemlendirici kullanın|Ilık (sıcak değil) duş alın|Sert sabundan kaçının","Çatlama, kanama veya yoğun kaşıntı varsa"],
+["Migren","Düzenli öğünler, bol su|Zencefilli çay","Karanlık, sessiz odada dinlenin|Alna soğuk kompres|Tetikleyicileri not edin (çikolata, alkol, uykusuzluk vb.)","İlk kez ise, görme bozukluğu (aura), ani şiddetli ağrı, uyuşma veya sıklaşıyorsa"],
+["Saman Nezlesi","Bol sıvı","Polen yoğun günlerde pencereleri kapatın|Tuzlu suyla burun yıkayın|Dışarıdan gelince duş alın|Eczacıdan antihistaminik sorun","Nefes darlığı, çok şiddetli belirtiler veya ilaç yetmiyorsa"],
+["Sivilce","","Yüzü günde 2 kez yumuşak temizleyiciyle yıkayın|Sıkmayın|Yağsız nemlendirici kullanın","Şiddetli, kistik veya iz bırakan sivilcede dermatoloğa başvurun"],
+["Ses Kısıklığı","Sıcak içecekler|Bol sıvı","Sesinizi dinlendirin, fısıldamayın|Ortam havasını nemli tutun|Sigaradan uzak durun","3 haftadan uzun sürerse veya nefes/yutma güçlüğü varsa"],
+["Stres ve Gerginlik","Papatya veya ıhlamur çayı|Düzenli öğünler, kafeini azaltın","Derin nefes egzersizi yapın|Yürüyüşe çıkın|Düzenli uyuyun|Yakınlarınızla konuşun","Günlük işlevlerinizi bozarsa, umutsuzluk veya kendinize zarar verme düşüncesi varsa hemen bir uzmana başvurun"],
+["Susuzluk (Dehidrasyon)","Su, ORS, çorba|Salatalık, karpuz gibi sulu meyve ve sebzeler","Küçük ve sık yudumlar alın|İdrar rengi açık sarı olmalı","Çok az idrar, baş dönmesi, sıvı tutamama varsa; bebek ve yaşlılarda beklemeyin"]
+];
+const nz=s=>s.toLocaleLowerCase('tr').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i');
+D.sort((a,b)=>a[0].localeCompare(b[0],'tr'));
+const li=s=>'<ul>'+s.split('|').map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+const idx=D.map(d=>nz(d.join(' ')));
+function render(){
+  const k=nz(document.getElementById('q').value.trim());
+  const r=D.filter((d,i)=>!k||idx[i].includes(k));
+  let h='',last='';
+  r.forEach(d=>{
+    const L=d[0][0].toLocaleUpperCase('tr');
+    if(L!==last){h+='<div class="L">'+L+'</div>';last=L}
+    h+='<details'+(k&&r.length<=3?' open':'')+'><summary>'+d[0]+'</summary><div class="b">'+(d[1]?'<h3>🥣 İyi gelen yiyecek ve içecekler</h3>'+li(d[1]):'')+'<h3>🏠 Evde yapılabilecekler</h3>'+li(d[2])+'<div class="w">⚠️ <b>Doktora ne zaman:</b> '+d[3]+'</div></div></details>';
+  });
+  document.getElementById('list').innerHTML=h||'<div class="no">Sonuç bulunamadı. Başka bir kelime deneyin.</div>';
+  document.getElementById('c').textContent=r.length+' rahatsızlık gösteriliyor';
+}
+document.getElementById('q').addEventListener('input',render);
+render();
+</script>
+</body>
+</html>
